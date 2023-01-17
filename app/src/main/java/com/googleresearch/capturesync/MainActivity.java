@@ -119,10 +119,6 @@ public class MainActivity extends Activity {
         return curSequence;
     }
 
-    public void setLogger(CSVLogger mLogger) {
-        this.mLogger = mLogger;
-    }
-
     public CSVLogger getLogger() {
         return mLogger;
     }
@@ -137,10 +133,6 @@ public class MainActivity extends Activity {
 
     // Phase config file to use for phase alignment, configs are located in the raw folder.
     private final int phaseConfigFile = R.raw.default_phaseconfig;
-
-    public MediaRecorder getMediaRecorder() {
-        return mediaRecorder;
-    }
 
     private MediaRecorder mediaRecorder = new MediaRecorder();
     private boolean isVideoRecording = false;
@@ -439,7 +431,7 @@ public class MainActivity extends Activity {
                                     .broadcastRpc(
                                             SoftwareSyncController.METHOD_STOP_RECORDING,
                                             "0");
-
+                            startPreview();
                         } else {
                             startVideo(false);
                             ((SoftwareSyncLeader) softwareSyncController.softwareSync)
@@ -593,7 +585,11 @@ public class MainActivity extends Activity {
     }
 
     private void closeCamera() {
-        stopPreview();
+        if (isVideoRecording) {
+            stopVideo();
+        } else {
+            stopPreview();
+        }
         captureSession = null;
         surface.release();
         if (cameraController != null) {
@@ -926,7 +922,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void startPreview() {
+    public void startPreview() {
         startPreview(false);
     }
 
@@ -1001,14 +997,6 @@ public class MainActivity extends Activity {
         return recorder;
     }
 
-    public void setVideoRecording(boolean videoRecording) {
-        isVideoRecording = videoRecording;
-    }
-
-    public boolean isVideoRecording() {
-        return isVideoRecording;
-    }
-
     public void startVideo(boolean wantAutoExp) {
         Log.d(TAG, "Starting video.");
         Toast.makeText(this, "Started recording video", Toast.LENGTH_LONG).show();
@@ -1051,10 +1039,11 @@ public class MainActivity extends Activity {
     }
 
     public void stopVideo() {
-        // Switch to preview again
-
         Toast.makeText(this, "Stopped recording video", Toast.LENGTH_LONG).show();
-        startPreview();
+        isVideoRecording = false;
+        mediaRecorder.stop();
+        mLogger.close();
+        mLogger = null;
     }
 
     private void stopPreview() {

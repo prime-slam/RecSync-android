@@ -203,7 +203,10 @@ public class SoftwareSyncController implements Closeable {
                     payload -> {
                         Log.v(TAG, "Stopping video");
                         context.runOnUiThread(
-                                context::stopVideo
+                                () -> {
+                                    context.stopVideo();
+                                    context.startPreview();
+                                }
                         );
                     });
 
